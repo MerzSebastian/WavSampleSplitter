@@ -13,7 +13,7 @@ zeroThreshold = 100 if args.zeroThreshold is None else args.zeroThreshold
 
 filePath = args.filePath
 fileName = filePath.split('/')[len(filePath.split('/'))-1]
-basePath = '/'.join(filePath.split('/')[:-1]) + "/"
+basePath = '/'.join(filePath.split('/')[:-1]) + ("/" if len(filePath.split('/')) > 1 else "") 
 
 def isInThreshold(data):
     return (data[0] > zeroThreshold*-1 and data[0] < zeroThreshold) and (data[1] > zeroThreshold*-1 and data[1] < zeroThreshold)
