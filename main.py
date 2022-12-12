@@ -3,10 +3,9 @@ import numpy as np
 import argparse
 
 parser = argparse.ArgumentParser()
+parser.add_argument('filePath') 
 parser.add_argument('-st', '--splitThreshold')
 parser.add_argument('-zt', '--zeroThreshold')
-parser.add_argument('-f', '--filePath')
-
 args = parser.parse_args()
 
 splitWhenNZeros = 2000 if args.splitThreshold is None else args.splitThreshold # maybe better to use time based value. like 1 second (can be calculated with samplerate)
