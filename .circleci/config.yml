@@ -1,0 +1,69 @@
+version: 2.1
+
+orbs:
+  win: circleci/windows@2.2.0
+
+jobs:
+  compile-python:
+    executor:
+      name: win/default
+      shell: powershell.exe
+    steps:
+      - checkout
+      - run:
+          name: "Upgrade pip & Install requirements"
+          shell: powershell.exe
+          command: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+      - run:
+          name: "Compile windows executable"
+          shell: powershell.exe
+          command: |
+            pyinstaller main.py --onefile
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - dist/
+
+  release:
+    docker:
+      - image: ubuntu:20.04
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: install github cli + zip
+          command: |
+            apt update
+            apt install -y curl
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+            && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+            && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+            && apt update \
+            && apt install gh zip -y
+      - run:
+          name: zip it and ship it
+          command: |
+            export NEW_VERSION=$(grep -oP '\[[0-9]\.[0-9]\.[0-9]\](?![\s\S]*\[[0-9]\.[0-9]\.[0-9]\])' CHANGELOG.md | tail -c +2 | head -c -2)
+            if [[ $(curl -s -w "%{http_code}" https://github.com/MerzSebastian/WavSampleSplitter/releases/tag/${NEW_VERSION}) = "Not Found404" ]]
+            then
+              export NOTES=$(grep -ozP '(## \['${NEW_VERSION}'\])([\S\s]*?)(?=## \[)' CHANGELOG.md)
+              echo $NOTES
+              mkdir release && mv binaries/ release/ && mv dist/main.exe release/WavSampleSplitter.exe
+              cd release && zip -r release.zip .
+              gh release create ${NEW_VERSION} release.zip --notes "${NOTES}"
+            fi
+
+            
+workflows:
+  release:
+    jobs:
+      - compile-python
+      - release:
+          requires:
+            - compile-python
+          filters:
+            branches:
+              only: main
