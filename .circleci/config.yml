@@ -51,8 +51,7 @@ jobs:
             then
               export NOTES=$(grep -ozP '(## \['${NEW_VERSION}'\])([\S\s]*?)(?=## \[)' CHANGELOG.md)
               echo $NOTES
-              mkdir release && mv binaries/ release/ && mv dist/main.exe release/WavSampleSplitter.exe
-              cd release && zip -r release.zip .
+              cd dist && zip -r release.zip .
               gh release create ${NEW_VERSION} release.zip --notes "${NOTES}"
             fi
 
