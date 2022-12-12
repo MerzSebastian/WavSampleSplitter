@@ -60,8 +60,10 @@ print("Saving as: ")
 
 fileNames = fileName.replace('.wav', '').split('-')
 for i in range(0, len(newValues)):
-    fileName = fileNames[i]
+    fileName = ""
     if len(fileNames) != len(newValues):
-        fileName = str(i)
-    print("     - " + str(fileNames[i]) + '.wav')
-    wavfile.write(basePath + str(fileNames[i]) + '.wav', samplerate, np.array(newValues[i], dtype=np.int16))
+        fileName = str(i+1)
+    else:
+        fileName = fileNames[i]
+    print("     - " + str(fileName) + '.wav')
+    wavfile.write(basePath + str(fileName) + '.wav', samplerate, np.array(newValues[i], dtype=np.int16))
