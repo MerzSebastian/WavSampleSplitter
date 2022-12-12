@@ -1,2 +1,2 @@
 pyinstaller==4.7
-scipy==1.9.3
+scipy==1.7.3
